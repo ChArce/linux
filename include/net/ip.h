@@ -285,6 +285,7 @@ void ip_static_sysctl_init(void);
 
 static inline bool ip_is_fragment(const struct iphdr *iph)
 {
+    //check the ip packet is a fragment or not, why  check IP_OFFSET??
 	return (iph->frag_off & htons(IP_MF | IP_OFFSET)) != 0;
 }
 

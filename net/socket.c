@@ -2506,7 +2506,8 @@ static int __init sock_init(void)
 	/*
 	 *      Initialize skbuff SLAB cache
 	 */
-	skb_init();
+	// create two cache with "skbuff_fclone_cache" and "skbuff_head_cache".
+    skb_init();
 
 	/*
 	 *      Initialize the protocols module.

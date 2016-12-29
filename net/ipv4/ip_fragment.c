@@ -248,6 +248,8 @@ out:
 /* Find the correct entry in the "incomplete datagrams" queue for
  * this IP datagram, and create new one, if nothing is found.
  */
+// if the fragment is the first one then create a new queue to gather other fragments,
+// and if it is not the first one then ip_find return its entry of owners.
 static struct ipq *ip_find(struct net *net, struct iphdr *iph,
 			   u32 user, int vif)
 {
@@ -259,6 +261,7 @@ static struct ipq *ip_find(struct net *net, struct iphdr *iph,
 	arg.user = user;
 	arg.vif = vif;
 
+    //use jhash_3words to generate a hash value
 	hash = ipqhashfn(iph->id, iph->saddr, iph->daddr, iph->protocol);
 
 	q = inet_frag_find(&net->ipv4.frags, &ip4_frags, &arg, hash);

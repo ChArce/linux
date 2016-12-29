@@ -1400,9 +1400,13 @@ int tcp_v4_do_rcv(struct sock *sk, struct sk_buff *skb)
 		return 0;
 	}
 
+    //check the checksum of TCP packet
 	if (tcp_checksum_complete(skb))
 		goto csum_err;
 
+    /**
+     * if the socket is TCP_LISTEN state, 
+     */
 	if (sk->sk_state == TCP_LISTEN) {
 		struct sock *nsk = tcp_v4_cookie_check(sk, skb);
 
@@ -1420,6 +1424,7 @@ int tcp_v4_do_rcv(struct sock *sk, struct sk_buff *skb)
 	} else
 		sock_rps_save_rxhash(sk, skb);
 
+    //process all other states except ESTABLISHED and TIME_WAIT
 	if (tcp_rcv_state_process(sk, skb)) {
 		rsk = sk;
 		goto reset;
@@ -1708,6 +1713,7 @@ process:
 	bh_lock_sock_nested(sk);
 	tcp_segs_in(tcp_sk(sk), skb);
 	ret = 0;
+    //is there any process using this socket?
 	if (!sock_owned_by_user(sk)) {
 		if (!tcp_prequeue(sk, skb))
 			ret = tcp_v4_do_rcv(sk, skb);

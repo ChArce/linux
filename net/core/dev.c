@@ -4082,6 +4082,7 @@ static int __netif_receive_skb_core(struct sk_buff *skb, bool pfmemalloc)
 
 	orig_dev = skb->dev;
 
+    //重置network header
 	skb_reset_network_header(skb);
 	if (!skb_transport_header_was_set(skb))
 		skb_reset_transport_header(skb);
@@ -4094,6 +4095,7 @@ another_round:
 
 	__this_cpu_inc(softnet_data.processed);
 
+    //如果是VLAN报文就需要先从数据中提取vlan_tci字段
 	if (skb->protocol == cpu_to_be16(ETH_P_8021Q) ||
 	    skb->protocol == cpu_to_be16(ETH_P_8021AD)) {
 		skb = skb_vlan_untag(skb);
@@ -4183,6 +4185,7 @@ ncls:
 		skb->vlan_tci = 0;
 	}
 
+    //根据skb->protocol协议类型移交给对应的协议处理函数
 	type = skb->protocol;
 
 	/* deliver only exact match when indicated */

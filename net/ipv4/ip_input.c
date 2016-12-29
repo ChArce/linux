@@ -249,7 +249,9 @@ int ip_local_deliver(struct sk_buff *skb)
 	 */
 	struct net *net = dev_net(skb->dev);
 
+    //check if it is a fragment
 	if (ip_is_fragment(ip_hdr(skb))) {
+        //fragment recombination
 		if (ip_defrag(net, skb, IP_DEFRAG_LOCAL_DELIVER))
 			return 0;
 	}

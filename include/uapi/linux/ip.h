@@ -87,15 +87,15 @@ struct iphdr {
 	__u8	ihl:4,
 		version:4;
 #elif defined (__BIG_ENDIAN_BITFIELD)
-	__u8	version:4,
-  		ihl:4;
+	__u8	version:4, //Version
+  		ihl:4;    //Header Length
 #else
 #error	"Please fix <asm/byteorder.h>"
 #endif
-	__u8	tos;
-	__be16	tot_len;
-	__be16	id;
-	__be16	frag_off;
+	__u8	tos;   //type of Service
+	__be16	tot_len; // total_length
+	__be16	id; //Identifier
+	__be16	frag_off;   //Flags, it contains flags and flag-offset. flags(**, DF, MF), DF means the route cannot ffrag this packet and if so it will return a err msg. MF means more fragments.
 	__u8	ttl;
 	__u8	protocol;
 	__sum16	check;
