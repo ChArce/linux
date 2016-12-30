@@ -213,7 +213,10 @@ static int ip_local_deliver_finish(struct net *net, struct sock *sk, struct sk_b
 				}
 				nf_reset(skb);
 			}
-			ret = ipprot->handler(skb);
+            //call the Layer 4 handler function, 
+            //they are defined in af_inet.c
+            //Here we just trace tcp packets -> call tcp_v4_rcv
+			ret = ipprot->handler(skb); //call the Lay4 handler function
 			if (ret < 0) {
 				protocol = -ret;
 				goto resubmit;
@@ -256,6 +259,7 @@ int ip_local_deliver(struct sk_buff *skb)
 			return 0;
 	}
 
+    //if not define CONFIG_NETFILTER,just call okfn(net, NULL, skb)
 	return NF_HOOK(NFPROTO_IPV4, NF_INET_LOCAL_IN,
 		       net, NULL, skb, skb->dev, NULL,
 		       ip_local_deliver_finish);

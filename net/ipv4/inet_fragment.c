@@ -399,13 +399,28 @@ struct inet_frag_queue *inet_frag_find(struct netns_frags *nf,
 	if (frag_mem_limit(nf) > nf->low_thresh)
 		inet_frag_schedule_worker(f);
 
+    //first to get the index of hash bucket using hash value generated.
+    //hb is the inet_frags.inet_frag_bucket
 	hash &= (INETFRAGS_HASHSZ - 1);
 	hb = &f->hash[hash];
 
+    //lock the chain_lock of the appointed index
 	spin_lock(&hb->chain_lock);
-	hlist_for_each_entry(q, &hb->chain, list) {
+
+    /*
+    for(q = hlist_entry_safe( (&hb->chain)->first, typeof(*q), list);
+            q;
+            q = hlist_entry_safe(q->list.next, typeof(*q), list)) {
+       //TODO
+    }*/
+
+
+    //check the net inside struct inet_frag_queue
+    //call ip4_frag_match to check values in key
+    //get the inet_frag_queue head address through list, then get the ipq head address through inet_frag_queue head address.
+    hlist_for_each_entry(q, &hb->chain, list) {
 		if (q->net == nf && f->match(q, key)) {
-			atomic_inc(&q->refcnt);
+			atomic_inc(&q->refcnt);  //add the reference counter of the queue
 			spin_unlock(&hb->chain_lock);
 			return q;
 		}

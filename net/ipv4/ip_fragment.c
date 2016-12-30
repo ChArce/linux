@@ -342,6 +342,7 @@ static int ip_frag_queue(struct ipq *qp, struct sk_buff *skb)
 	int err = -ENOENT;
 	u8 ecn;
 
+    //inet_frag_queue has been processed and will be destruction
 	if (qp->q.flags & INET_FRAG_COMPLETE)
 		goto err;
 
@@ -360,7 +361,7 @@ static int ip_frag_queue(struct ipq *qp, struct sk_buff *skb)
 	ihl = ip_hdrlen(skb);
 
 	/* Determine the position of this fragment. */
-	end = offset + skb->len - skb_network_offset(skb) - ihl;
+	end = offset + (skb->len - skb_network_offset(skb) - ihl);
 	err = -EINVAL;
 
 	/* Is this the final fragment? */
@@ -374,7 +375,8 @@ static int ip_frag_queue(struct ipq *qp, struct sk_buff *skb)
 		qp->q.flags |= INET_FRAG_LAST_IN;
 		qp->q.len = end;
 	} else {
-		if (end&7) {
+        //it is not the last fragment
+		if (end&7) { //check the end offset is aligned with 8 bytes
 			end &= ~7;
 			if (skb->ip_summed != CHECKSUM_UNNECESSARY)
 				skb->ip_summed = CHECKSUM_NONE;
@@ -386,7 +388,7 @@ static int ip_frag_queue(struct ipq *qp, struct sk_buff *skb)
 			qp->q.len = end;
 		}
 	}
-	if (end == offset)
+	if (end == offset) // the skb data is null 
 		goto err;
 
 	err = -ENOMEM;
@@ -664,7 +666,7 @@ int ip_defrag(struct net *net, struct sk_buff *skb, u32 user)
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMREQDS);
 	skb_orphan(skb);
 
-	/* Lookup (or create) queue header */
+	/* Lookup (or create) queue header , return struct ipq*/
 	qp = ip_find(net, ip_hdr(skb), user, vif);
 	if (qp) {
 		int ret;
