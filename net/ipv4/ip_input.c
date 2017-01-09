@@ -193,19 +193,23 @@ static int ip_local_deliver_finish(struct net *net, struct sock *sk, struct sk_b
 {
 	__skb_pull(skb, skb_network_header_len(skb));
 
-	rcu_read_lock();
+	// Read-copy Update
+    rcu_read_lock();
 	{
+        //get the protocol of this packet
 		int protocol = ip_hdr(skb)->protocol;
-		const struct net_protocol *ipprot;
+		const struct net_protocol *ipprot;// every protocol must register its struct first on init phase
 		int raw;
 
 	resubmit:
 		raw = raw_local_deliver(skb, protocol);
 
+        //from inet_protos list to get the correct protocol struct depending on protocol as index
 		ipprot = rcu_dereference(inet_protos[protocol]);
 		if (ipprot) {
 			int ret;
 
+            //if turn on security policy , deliver to IPSec to process
 			if (!ipprot->no_policy) {
 				if (!xfrm4_policy_check(NULL, XFRM_POLICY_IN, skb)) {
 					kfree_skb(skb);
@@ -250,6 +254,7 @@ int ip_local_deliver(struct sk_buff *skb)
 	/*
 	 *	Reassemble IP fragments.
 	 */
+    //get the net Namespace of the net device
 	struct net *net = dev_net(skb->dev);
 
     //check if it is a fragment
@@ -399,7 +404,7 @@ static int ip_rcv_finish(struct net *net, struct sock *sk, struct sk_buff *skb)
 			goto drop;
 	}
 
-	return dst_input(skb);
+	return dst_input(skb); // call ip_forward, ip_local_deliver, etc  depending on skb_dst. Here we just trace ip_local_deliver()
 
 drop:
 	kfree_skb(skb);
